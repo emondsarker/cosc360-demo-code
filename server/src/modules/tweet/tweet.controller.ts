@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import * as tweetService from "./tweet.service.js";
 
-export function getAll(_req: Request, res: Response): void {
-  const tweets = tweetService.getAll();
+export async function getAll(_req: Request, res: Response): Promise<void> {
+  const tweets = await tweetService.getAll();
   res.json({ data: tweets });
 }
 
-export function create(req: Request, res: Response): void {
+export async function create(req: Request, res: Response): Promise<void> {
   const { content } = req.body as { content: string };
 
   if (!content || typeof content !== "string" || !content.trim()) {
@@ -14,11 +14,16 @@ export function create(req: Request, res: Response): void {
     return;
   }
 
-  const tweet = tweetService.create(content.trim(), req.userId!);
-  res.status(201).json({ data: tweet });
+  try {
+    const tweet = await tweetService.create(content.trim(), req.userId!);
+    res.status(201).json({ data: tweet });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(400).json({ error: message });
+  }
 }
 
-export function update(req: Request, res: Response): void {
+export async function update(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
   const { content } = req.body as { content: string };
 
@@ -28,7 +33,7 @@ export function update(req: Request, res: Response): void {
   }
 
   try {
-    const tweet = tweetService.update(id, content.trim(), req.userId!);
+    const tweet = await tweetService.update(id, content.trim(), req.userId!);
     res.json({ data: tweet });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -37,11 +42,11 @@ export function update(req: Request, res: Response): void {
   }
 }
 
-export function remove(req: Request, res: Response): void {
+export async function remove(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
 
   try {
-    const result = tweetService.remove(id, req.userId!);
+    const result = await tweetService.remove(id, req.userId!);
     res.json({ data: result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

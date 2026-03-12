@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import * as authRepository from "../modules/auth/auth.repository.js";
+import { userRepository } from "../repositories.js";
 
-export function authMiddleware(
+export async function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const userId: string | undefined = req.headers["x-user-id"] as
     | string
     | undefined;
@@ -15,7 +15,7 @@ export function authMiddleware(
     return;
   }
 
-  const user = authRepository.findById(userId);
+  const user = await userRepository.findById(userId);
   if (!user) {
     res.status(401).json({ error: "Invalid user" });
     return;

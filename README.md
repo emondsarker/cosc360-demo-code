@@ -36,6 +36,93 @@ This runs both the React development server and Express server concurrently:
 
 ---
 
+## MongoDB Setup
+
+This project uses MongoDB for persistence (local Docker development, Atlas-ready for production).
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+
+### Quick Start with MongoDB
+
+1. **Start MongoDB container:**
+
+   ```bash
+   docker compose up -d mongo
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   npm install && npm install --prefix client && npm install --prefix server
+   ```
+
+3. **Configure environment:**
+
+   Copy `.env.example` to `.env` in the `server/` directory:
+
+   ```bash
+   cp server/.env.example server/.env
+   ```
+
+   The default configuration connects to local MongoDB:
+
+   ```
+   MONGODB_URI=mongodb://localhost:27017/cosc360
+   PORT=4000
+   ```
+
+4. **Start the application:**
+
+   ```bash
+   npm start
+   ```
+
+   The server will log "MongoDB connected" on startup.
+
+### Database Management
+
+**View MongoDB logs:**
+
+```bash
+docker compose logs mongo
+```
+
+**Access MongoDB CLI (mongosh):**
+
+```bash
+docker exec -it <container-id> mongosh cosc360
+```
+
+**Stop MongoDB:**
+
+```bash
+docker compose down
+```
+
+**Reset data (delete MongoDB volume):**
+
+```bash
+docker compose down -v
+```
+
+### Switching to MongoDB Atlas
+
+To use a cloud MongoDB instance (production-ready):
+
+1. Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Update `server/.env`:
+
+   ```
+   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/cosc360
+   PORT=4000
+   ```
+
+3. Restart the server — no code changes required
+
+---
+
 ## Project Structure
 
 ```
@@ -51,10 +138,12 @@ This runs both the React development server and Express server concurrently:
 │
 ├── server/                # Express server
 │   ├── src/
+│   │   ├── db/            # Database connection
 │   │   ├── modules/       # Feature modules with domain, routes, controller, service, repository
 │   │   ├── middleware/    # Global middleware
-│   │   ├── data/          # JSON data files
+│   │   ├── repositories.ts # Repository factory
 │   │   └── index.ts       # Server entry point
+│   ├── .env               # Environment variables (create from .env.example)
 │   └── package.json
 │
 ├── docs/                  # Documentation

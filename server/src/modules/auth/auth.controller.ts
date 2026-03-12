@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as authService from "./auth.service.js";
 
-export function login(req: Request, res: Response): void {
+export async function login(req: Request, res: Response): Promise<void> {
   const { username } = req.body as { username: string };
 
   if (!username || typeof username !== "string" || !username.trim()) {
@@ -9,16 +9,16 @@ export function login(req: Request, res: Response): void {
     return;
   }
 
-  const user = authService.login(username.trim());
+  const user = await authService.login(username.trim());
   res.json({ data: user });
 }
 
-export function getMe(req: Request, res: Response): void {
-  const user = authService.getMe(req.userId!);
+export async function getMe(req: Request, res: Response): Promise<void> {
+  const user = await authService.getMe(req.userId!);
   res.json({ data: user });
 }
 
-export function updateProfile(req: Request, res: Response): void {
+export async function updateProfile(req: Request, res: Response): Promise<void> {
   const { username } = req.body as { username: string };
 
   if (!username || typeof username !== "string" || !username.trim()) {
@@ -27,7 +27,7 @@ export function updateProfile(req: Request, res: Response): void {
   }
 
   try {
-    const user = authService.updateProfile(req.userId!, username.trim());
+    const user = await authService.updateProfile(req.userId!, username.trim());
     res.json({ data: user });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

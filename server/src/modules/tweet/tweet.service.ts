@@ -1,11 +1,12 @@
 import { Tweet } from "./domain/classes/Tweet.js";
 import type { ITweet, ITweetWithAuthor } from "./domain/types/index.js";
-import * as tweetRepository from "./tweet.repository.js";
-import * as authRepository from "../auth/auth.repository.js";
+import { tweetRepository, userRepository } from "../../repositories.js";
 
-export function getAll(): ITweetWithAuthor[] {
-  const tweets: ITweet[] = tweetRepository.findAll();
-  const users = authRepository.findAll();
+export async function getAll(): Promise<ITweetWithAuthor[]> {
+  const [tweets, users] = await Promise.all([
+    tweetRepository.findAll(),
+    userRepository.findAll(),
+  ]);
 
   return tweets
     .map((tweet: ITweet): ITweetWithAuthor | null => {
@@ -17,17 +18,17 @@ export function getAll(): ITweetWithAuthor[] {
     .reverse();
 }
 
-export function create(content: string, authorId: string): ITweet {
-  const tweet: Tweet = Tweet.create(content, authorId);
-  return tweetRepository.save(tweet.toJSON());
+export async function create(content: string, authorId: string): Promise<ITweet> {
+  const tweet = Tweet.create(content, authorId);
+  return await tweetRepository.save(tweet.toJSON());
 }
 
-export function update(
+export async function update(
   id: string,
   content: string,
   userId: string
-): ITweet {
-  const tweet: ITweet | undefined = tweetRepository.findById(id);
+): Promise<ITweet> {
+  const tweet = await tweetRepository.findById(id);
   if (!tweet) {
     throw new Error("Tweet not found");
   }
@@ -35,17 +36,17 @@ export function update(
     throw new Error("Not authorized");
   }
   tweet.content = content;
-  return tweetRepository.save(tweet);
+  return await tweetRepository.save(tweet);
 }
 
-export function remove(id: string, userId: string): { id: string } {
-  const tweet: ITweet | undefined = tweetRepository.findById(id);
+export async function remove(id: string, userId: string): Promise<{ id: string }> {
+  const tweet = await tweetRepository.findById(id);
   if (!tweet) {
     throw new Error("Tweet not found");
   }
   if (tweet.authorId !== userId) {
     throw new Error("Not authorized");
   }
-  tweetRepository.remove(id);
+  await tweetRepository.remove(id);
   return { id };
 }

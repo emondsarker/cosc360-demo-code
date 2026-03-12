@@ -1,39 +1,37 @@
-import fs from "fs";
-import path from "path";
-import { DATA_DIR } from "../../constants.js";
 import type { IUser } from "./domain/types/index.js";
+import { UserModel } from "./domain/models/user.model.js";
 
-const USERS_FILE: string = path.join(DATA_DIR, "users.json");
-
-function readUsers(): IUser[] {
-  const data: string = fs.readFileSync(USERS_FILE, "utf-8");
-  return JSON.parse(data) as IUser[];
+export async function findAll(): Promise<IUser[]> {
+  const docs = await UserModel.find();
+  return docs.map((doc) => doc.toJSON() as IUser);
 }
 
-function writeUsers(users: IUser[]): void {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+export async function findById(id: string): Promise<IUser | undefined> {
+  const user = await UserModel.findById(id);
+  return user ? (user.toJSON() as IUser) : undefined;
 }
 
-export function findAll(): IUser[] {
-  return readUsers();
+export async function findByUsername(username: string): Promise<IUser | undefined> {
+  const user = await UserModel.findOne({ username });
+  return user ? (user.toJSON() as IUser) : undefined;
 }
 
-export function findById(id: string): IUser | undefined {
-  return readUsers().find((u: IUser): boolean => u.id === id);
+export async function save(user: IUser): Promise<IUser> {
+  const saved = await UserModel.findByIdAndUpdate(
+    user.id,
+    {
+      _id: user.id,
+      username: user.username,
+      createdAt: user.createdAt,
+    },
+    { upsert: true, new: true }
+  );
+  return saved!.toJSON() as IUser;
 }
 
-export function findByUsername(username: string): IUser | undefined {
-  return readUsers().find((u: IUser): boolean => u.username === username);
-}
-
-export function save(user: IUser): IUser {
-  const users: IUser[] = readUsers();
-  const index: number = users.findIndex((u: IUser): boolean => u.id === user.id);
-  if (index >= 0) {
-    users[index] = user;
-  } else {
-    users.push(user);
-  }
-  writeUsers(users);
-  return user;
-}
+export const mongoUserRepository = {
+  findAll,
+  findById,
+  findByUsername,
+  save,
+};

@@ -1,42 +1,37 @@
-import fs from "fs";
-import path from "path";
-import { DATA_DIR } from "../../constants.js";
 import type { ITweet } from "./domain/types/index.js";
+import { TweetModel } from "./domain/models/tweet.model.js";
 
-const TWEETS_FILE: string = path.join(DATA_DIR, "tweets.json");
-
-function readTweets(): ITweet[] {
-  const data: string = fs.readFileSync(TWEETS_FILE, "utf-8");
-  return JSON.parse(data) as ITweet[];
+export async function findAll(): Promise<ITweet[]> {
+  const docs = await TweetModel.find();
+  return docs.map((doc) => doc.toJSON() as ITweet);
 }
 
-function writeTweets(tweets: ITweet[]): void {
-  fs.writeFileSync(TWEETS_FILE, JSON.stringify(tweets, null, 2));
+export async function findById(id: string): Promise<ITweet | undefined> {
+  const tweet = await TweetModel.findById(id);
+  return tweet ? (tweet.toJSON() as ITweet) : undefined;
 }
 
-export function findAll(): ITweet[] {
-  return readTweets();
-}
-
-export function findById(id: string): ITweet | undefined {
-  return readTweets().find((t: ITweet): boolean => t.id === id);
-}
-
-export function save(tweet: ITweet): ITweet {
-  const tweets: ITweet[] = readTweets();
-  const index: number = tweets.findIndex((t: ITweet): boolean => t.id === tweet.id);
-  if (index >= 0) {
-    tweets[index] = tweet;
-  } else {
-    tweets.push(tweet);
-  }
-  writeTweets(tweets);
-  return tweet;
-}
-
-export function remove(id: string): void {
-  const tweets: ITweet[] = readTweets().filter(
-    (t: ITweet): boolean => t.id !== id
+export async function save(tweet: ITweet): Promise<ITweet> {
+  const saved = await TweetModel.findByIdAndUpdate(
+    tweet.id,
+    {
+      _id: tweet.id,
+      content: tweet.content,
+      authorId: tweet.authorId,
+      createdAt: tweet.createdAt,
+    },
+    { upsert: true, new: true }
   );
-  writeTweets(tweets);
+  return saved!.toJSON() as ITweet;
 }
+
+export async function remove(id: string): Promise<void> {
+  await TweetModel.findByIdAndDelete(id);
+}
+
+export const mongoTweetRepository = {
+  findAll,
+  findById,
+  save,
+  remove,
+};
