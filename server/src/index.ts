@@ -22,7 +22,7 @@ async function main(): Promise<void> {
 
   // Serve built React client in production
   app.use(express.static(path.join(import.meta.dirname, "..", "public")));
-  app.get("*", (_req, res) => {
+  app.get("/{*splat}", (_req, res) => {
     res.sendFile(path.join(import.meta.dirname, "..", "public", "index.html"));
   });
 
