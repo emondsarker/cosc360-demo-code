@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { connectDB } from "./db/connection.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { tweetRoutes } from "./modules/tweet/tweet.routes.js";
@@ -18,6 +19,12 @@ async function main(): Promise<void> {
   app.use("/api/tweets", tweetRoutes);
 
   app.use(errorHandler);
+
+  // Serve built React client in production
+  app.use(express.static(path.join(import.meta.dirname, "..", "public")));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(import.meta.dirname, "..", "public", "index.html"));
+  });
 
   await connectDB();
 
