@@ -15,7 +15,7 @@ export async function create(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    const tweet = await tweetService.create(content.trim(), req.userId!);
+    const tweet = await tweetService.create(content.trim(), String(req.userId));
     res.status(201).json({ data: tweet });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -24,7 +24,7 @@ export async function create(req: Request, res: Response): Promise<void> {
 }
 
 export async function update(req: Request, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { content } = req.body as { content: string };
 
   if (!content || typeof content !== "string" || !content.trim()) {
@@ -33,7 +33,7 @@ export async function update(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    const tweet = await tweetService.update(id, content.trim(), req.userId!);
+    const tweet = await tweetService.update(id, content.trim(), String(req.userId));
     res.json({ data: tweet });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -43,10 +43,10 @@ export async function update(req: Request, res: Response): Promise<void> {
 }
 
 export async function remove(req: Request, res: Response): Promise<void> {
-  const { id } = req.params;
+  const id = req.params.id as string;
 
   try {
-    const result = await tweetService.remove(id, req.userId!);
+    const result = await tweetService.remove(id, String(req.userId));
     res.json({ data: result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

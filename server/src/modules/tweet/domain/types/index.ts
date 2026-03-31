@@ -1,4 +1,4 @@
-import type { IUser } from "../../auth/domain/types/index.js";
+import type { IUser } from "../../../auth/domain/types/index.js";
 
 export interface ITweet {
   id: string;
